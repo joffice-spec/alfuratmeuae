@@ -967,10 +967,11 @@ class Component extends DCLogic {
 
 </script>
 <script>
-/* Hero: scroll-locked segmented playback.
-   Scroll 1 plays the video to the midpoint and locks; scroll 2 plays the rest;
-   then normal scrolling resumes. Playback-only (no seeking) so it works on
-   static hosts without byte-range support. */
+/* Hero: scroll-gated segmented playback.
+   While the visitor is at the top of the page, the FIRST downward scroll plays
+   the hero video from the start to its midpoint, holding the page in place; the
+   NEXT scroll plays the second half; then the page unlocks and scrolls normally.
+   Playback-only (no seeking) so it works on static hosts without byte-range. */
 (function(){
   "use strict";
   var tries=0;
@@ -978,59 +979,68 @@ class Component extends DCLogic {
     var hero=document.getElementById('top');
     var video=hero&&hero.querySelector('video');
     var prog=hero&&hero.querySelector('[data-heroprog]');
-    if(!hero||!video){ if(tries++<80){ setTimeout(boot,100); } return; }
+    if(!hero||!video){ if(tries++<80) setTimeout(boot,100); return; }
+
     var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var step=0, busy=false, armed=true, dur=0;
-    function setDur(){ if(isFinite(video.duration)&&video.duration>0) dur=video.duration; }
-    setDur(); video.addEventListener('loadedmetadata', setDur);
-    function setProg(){ if(prog&&dur) prog.style.width=Math.min(100,(video.currentTime/dur)*100).toFixed(1)+'%'; }
-    function finish(){ busy=false; setTimeout(function(){ if(step<2) armed=true; }, 450); }
-    function playSeg(to){
-      busy=true; var start=performance.now();
-      var cap=(to - video.currentTime)*1000/(video.playbackRate||1) + 5000; // segment time + buffer
-      var p; try{ p=video.play(); }catch(e){ p=null; }
-      if(p&&p.catch) p.catch(function(){ try{video.pause();}catch(e){} step=2; busy=false; });
+    var done=false, seg=0, playing=false, ready=true, quiet=null;
+    function unlock(){ done=true; }
+
+    // Only gate when the visitor actually lands at the top; never hijack a
+    // mid-page load, an in-page anchor, or a reduced-motion preference.
+    if(reduce || (window.scrollY||0)>4){ done=true; return; }
+    try{ video.playbackRate=1.5; }catch(e){}
+
+    function setProg(){ var d=video.duration||10; if(prog) prog.style.width=Math.min(100,(video.currentTime/d)*100).toFixed(1)+'%'; }
+
+    function playTo(frac){
+      playing=true;
+      var d=video.duration||10, target=(frac>=1? d : d*frac), start=performance.now();
+      var cap=((target-video.currentTime)/(video.playbackRate||1))*1000 + 4000; // wall-clock failsafe
+      var pr=null; try{ pr=video.play(); }catch(e){}
+      if(pr&&pr.catch) pr.catch(function(){ playing=false; seg=2; try{video.pause();}catch(e){} unlock(); });
       (function tick(){
         setProg();
-        if(video.currentTime>=to-0.05 || video.ended || (performance.now()-start)>cap){
+        if(video.currentTime>=target-0.04 || video.ended || (performance.now()-start)>cap){
           try{ video.pause(); }catch(e){}
-          setProg(); finish(); return;
+          setProg(); playing=false;
+          if(seg>=2) setTimeout(unlock,140);
+          return;
         }
         requestAnimationFrame(tick);
       })();
     }
-    function atHero(){ return hero.getBoundingClientRect().bottom > (window.innerHeight*0.6); }
-    function advance(){
-      if(step>=2) return false;
-      if(reduce){ step=2; setProg(); return false; }   // reduced motion: no lock
-      if(!dur) return true;                             // metadata not ready: keep locked
-      if(busy||!armed) return true;                     // mid-segment / cooling down: swallow
-      armed=false; step++;
-      playSeg(step===1 ? dur*0.5 : dur);
-      return true;
+
+    function trigger(){
+      if(done||playing||!ready||seg>=2) return;
+      ready=false; seg++;
+      playTo(seg===1 ? 0.5 : 1);
     }
-    // failsafe: never trap the user if the video can't load
-    setTimeout(function(){ if(!dur) step=2; }, 6000);
+    // Re-arm only after scrolling goes quiet, so one continuous swipe cannot
+    // skip both halves — each half needs its own distinct scroll.
+    function rearm(){ clearTimeout(quiet); quiet=setTimeout(function(){ ready=true; }, 70); }
+
+    // Failsafe: if video metadata never arrives, never trap the visitor.
+    setTimeout(function(){ if(!(video.duration>0)) unlock(); }, 4000);
 
     window.addEventListener('wheel', function(e){
-      if(step>=2 || !atHero() || e.deltaY<=0) return;   // normal scrolling
-      e.preventDefault();                               // lock downward scroll during the two steps
-      advance();
+      if(done) return;                      // unlocked -> normal scrolling
+      if((window.scrollY||0)>4){ unlock(); return; } // left the hero some other way
+      e.preventDefault();                   // hold the page on the hero while gating
+      if(e.deltaY>0){ trigger(); rearm(); }
     }, {passive:false});
 
     var ty=null;
-    window.addEventListener('touchstart', function(e){ ty=e.touches[0].clientY; }, {passive:true});
+    window.addEventListener('touchstart', function(e){ if(!done) ty=e.touches[0].clientY; }, {passive:true});
     window.addEventListener('touchmove', function(e){
-      if(step>=2 || !atHero() || ty==null) return;
-      if((ty - e.touches[0].clientY) <= 6) return;      // only downward intent
-      if(e.cancelable) e.preventDefault();
-      advance();
+      if(done||ty==null) return;
+      if((window.scrollY||0)>4){ unlock(); return; }
+      if(ty-e.touches[0].clientY>6){ if(e.cancelable) e.preventDefault(); trigger(); }
     }, {passive:false});
-    window.addEventListener('touchend', function(){ ty=null; }, {passive:true});
+    window.addEventListener('touchend', function(){ ty=null; ready=true; }, {passive:true});
 
     window.addEventListener('keydown', function(e){
-      if(step>=2 || !atHero()) return;
-      if(e.key==='ArrowDown'||e.key==='PageDown'||e.key===' '||e.key==='Spacebar'){ e.preventDefault(); advance(); }
+      if(done) return;
+      if(e.key==='ArrowDown'||e.key==='PageDown'||e.key===' '||e.key==='Spacebar'){ e.preventDefault(); trigger(); ready=true; }
     });
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot);

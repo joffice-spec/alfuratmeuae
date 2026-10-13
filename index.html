@@ -75,7 +75,7 @@
 <section id="top" ref="{{heroRef}}" style="position:relative;height:{{heroHeight}};background:#0a0b0d">
 <div style="position:sticky;top:0;height:100vh;overflow:hidden">
 <div style="position:absolute;inset:0;transform:scale({{heroScale}});transform-origin:50% 60%;background:#0d1014">
-<video ref="{{videoRef}}" muted playsinline preload="auto" disableremoteplayback poster="assets/video/al-furat-hero-scrub-poster.jpg" width="1280" height="720" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;display:block"><source src="assets/video/al-furat-hero-scrub.mp4" type="video/mp4"></video>
+<video muted playsinline preload="auto" disableremoteplayback poster="assets/video/al-furat-hero-scrub-poster.jpg" width="1280" height="720" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;display:block"><source src="assets/video/al-furat-hero-scrub.mp4" type="video/mp4"></video>
 <div style="position:absolute;inset:0;background:radial-gradient(70% 55% at 58% 40%,rgba(59,134,247,.12) 0%,rgba(10,11,13,0) 70%)"></div>
 </div>
 <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,11,13,.55) 0%,rgba(10,11,13,.18) 32%,rgba(10,11,13,.86) 100%)"></div>
@@ -98,7 +98,7 @@
 <div data-gutl style="position:absolute;left:56px;bottom:26px;display:flex;align-items:center;gap:14px;opacity:{{scrollHint}}">
 <span style="font:500 9.5px/1 'JetBrains Mono',ui-monospace,monospace;letter-spacing:.22em;color:rgba(242,241,238,.45)">SCROLL TO PLAY</span>
 <span style="width:120px;height:1px;background:rgba(242,241,238,.2);position:relative;display:block">
-<span style="position:absolute;left:0;top:0;bottom:0;width:{{heroProgress}};background:#ffd200;display:block"></span>
+<span data-heroprog style="position:absolute;left:0;top:0;bottom:0;width:0%;background:#ffd200;display:block"></span>
 </span>
 </div>
 </div>
@@ -434,7 +434,7 @@
 </main>
 
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440},&quot;heroScrubLength&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:200,&quot;min&quot;:150,&quot;max&quot;:500,&quot;step&quot;:10,&quot;unit&quot;:&quot;vh&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Hero&quot;,&quot;label&quot;:&quot;Scroll distance that scrubs the video&quot;},&quot;scrubLength&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:340,&quot;min&quot;:200,&quot;max&quot;:600,&quot;step&quot;:20,&quot;unit&quot;:&quot;vh&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Range scrub&quot;,&quot;label&quot;:&quot;Scroll distance for the pinned range&quot;},&quot;stickyNav&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Navigation&quot;,&quot;label&quot;:&quot;Nav goes solid after hero&quot;},&quot;calloutStagger&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:150,&quot;min&quot;:0,&quot;max&quot;:400,&quot;step&quot;:25,&quot;unit&quot;:&quot;ms&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Anatomy&quot;,&quot;label&quot;:&quot;Delay between callouts&quot;},&quot;orbitSpeed&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:0.04,&quot;min&quot;:0.01,&quot;max&quot;:0.2,&quot;step&quot;:0.01,&quot;unit&quot;:&quot;°/frame&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Engineering orbit&quot;,&quot;label&quot;:&quot;Rotation speed&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440},&quot;heroScrubLength&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:130,&quot;min&quot;:150,&quot;max&quot;:500,&quot;step&quot;:10,&quot;unit&quot;:&quot;vh&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Hero&quot;,&quot;label&quot;:&quot;Scroll distance that scrubs the video&quot;},&quot;scrubLength&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:340,&quot;min&quot;:200,&quot;max&quot;:600,&quot;step&quot;:20,&quot;unit&quot;:&quot;vh&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Range scrub&quot;,&quot;label&quot;:&quot;Scroll distance for the pinned range&quot;},&quot;stickyNav&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Navigation&quot;,&quot;label&quot;:&quot;Nav goes solid after hero&quot;},&quot;calloutStagger&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:150,&quot;min&quot;:0,&quot;max&quot;:400,&quot;step&quot;:25,&quot;unit&quot;:&quot;ms&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Anatomy&quot;,&quot;label&quot;:&quot;Delay between callouts&quot;},&quot;orbitSpeed&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:0.04,&quot;min&quot;:0.01,&quot;max&quot;:0.2,&quot;step&quot;:0.01,&quot;unit&quot;:&quot;°/frame&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Engineering orbit&quot;,&quot;label&quot;:&quot;Rotation speed&quot;}}">
 class Component extends DCLogic {
   state = { heroP: 0, rangeP: 0, panel: null, sent: false };
   rangeRef = React.createRef();
@@ -945,7 +945,7 @@ class Component extends DCLogic {
       heroRef: this.heroRef,
       videoRef: this.videoRef,
       anatomyRef: this.anatomyRef,
-      heroHeight: (this.props.heroScrubLength ?? 200) + 'vh',
+      heroHeight: (this.props.heroScrubLength ?? 130) + 'vh',
       heroProgress: (Math.min(1, heroP / 0.86) * 100).toFixed(2) + '%',
       scrollHint: (1 - heroP * 1.6).toFixed(3),
       rangeHeight: (this.props.scrubLength ?? 340) + 'vh',
@@ -965,6 +965,77 @@ class Component extends DCLogic {
   }
 }
 
+</script>
+<script>
+/* Hero: scroll-locked segmented playback.
+   Scroll 1 plays the video to the midpoint and locks; scroll 2 plays the rest;
+   then normal scrolling resumes. Playback-only (no seeking) so it works on
+   static hosts without byte-range support. */
+(function(){
+  "use strict";
+  var tries=0;
+  function boot(){
+    var hero=document.getElementById('top');
+    var video=hero&&hero.querySelector('video');
+    var prog=hero&&hero.querySelector('[data-heroprog]');
+    if(!hero||!video){ if(tries++<80){ setTimeout(boot,100); } return; }
+    var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var step=0, busy=false, armed=true, dur=0;
+    function setDur(){ if(isFinite(video.duration)&&video.duration>0) dur=video.duration; }
+    setDur(); video.addEventListener('loadedmetadata', setDur);
+    function setProg(){ if(prog&&dur) prog.style.width=Math.min(100,(video.currentTime/dur)*100).toFixed(1)+'%'; }
+    function finish(){ busy=false; setTimeout(function(){ if(step<2) armed=true; }, 450); }
+    function playSeg(to){
+      busy=true; var start=performance.now();
+      var cap=(to - video.currentTime)*1000/(video.playbackRate||1) + 5000; // segment time + buffer
+      var p; try{ p=video.play(); }catch(e){ p=null; }
+      if(p&&p.catch) p.catch(function(){ try{video.pause();}catch(e){} step=2; busy=false; });
+      (function tick(){
+        setProg();
+        if(video.currentTime>=to-0.05 || video.ended || (performance.now()-start)>cap){
+          try{ video.pause(); }catch(e){}
+          setProg(); finish(); return;
+        }
+        requestAnimationFrame(tick);
+      })();
+    }
+    function atHero(){ return hero.getBoundingClientRect().bottom > (window.innerHeight*0.6); }
+    function advance(){
+      if(step>=2) return false;
+      if(reduce){ step=2; setProg(); return false; }   // reduced motion: no lock
+      if(!dur) return true;                             // metadata not ready: keep locked
+      if(busy||!armed) return true;                     // mid-segment / cooling down: swallow
+      armed=false; step++;
+      playSeg(step===1 ? dur*0.5 : dur);
+      return true;
+    }
+    // failsafe: never trap the user if the video can't load
+    setTimeout(function(){ if(!dur) step=2; }, 6000);
+
+    window.addEventListener('wheel', function(e){
+      if(step>=2 || !atHero() || e.deltaY<=0) return;   // normal scrolling
+      e.preventDefault();                               // lock downward scroll during the two steps
+      advance();
+    }, {passive:false});
+
+    var ty=null;
+    window.addEventListener('touchstart', function(e){ ty=e.touches[0].clientY; }, {passive:true});
+    window.addEventListener('touchmove', function(e){
+      if(step>=2 || !atHero() || ty==null) return;
+      if((ty - e.touches[0].clientY) <= 6) return;      // only downward intent
+      if(e.cancelable) e.preventDefault();
+      advance();
+    }, {passive:false});
+    window.addEventListener('touchend', function(){ ty=null; }, {passive:true});
+
+    window.addEventListener('keydown', function(e){
+      if(step>=2 || !atHero()) return;
+      if(e.key==='ArrowDown'||e.key==='PageDown'||e.key===' '||e.key==='Spacebar'){ e.preventDefault(); advance(); }
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
 </script>
 </body>
 </html>

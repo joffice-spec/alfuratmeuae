@@ -968,64 +968,80 @@ class Component extends DCLogic {
 </script>
 <script>
 /* Hero: scroll-gated segmented playback.
-   While the visitor is at the top of the page, the FIRST downward scroll plays
-   the hero video from the start to its midpoint, holding the page in place; the
-   NEXT scroll plays the second half; then the page unlocks and scrolls normally.
-   Playback-only (no seeking) so it works on static hosts without byte-range. */
+   At the top of the page the FIRST downward scroll plays the hero video from
+   its start to the midpoint, holding the page in place; the NEXT scroll plays
+   the second half; then the page unlocks and scrolls normally.
+   Robust by design: completion is detected via the media `timeupdate` event
+   (works even when requestAnimationFrame is throttled), each segment explicitly
+   seeks its own start, the video is force-muted (so muted-autoplay is always
+   allowed and silent), and progress is drawn on the controller's own element so
+   the page's template runtime cannot reset it. */
 (function(){
   "use strict";
   var tries=0;
   function boot(){
     var hero=document.getElementById('top');
-    var video=hero&&hero.querySelector('video');
-    var prog=hero&&hero.querySelector('[data-heroprog]');
-    if(!hero||!video){ if(tries++<80) setTimeout(boot,100); return; }
-
+    if(!hero || !hero.querySelector('video')){ if(tries++<80) setTimeout(boot,100); return; }
     var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var done=false, seg=0, playing=false, ready=true, quiet=null;
     function unlock(){ done=true; }
+    function vid(){ return hero.querySelector('video'); }
+    function mute(v){ try{ v.muted=true; v.defaultMuted=true; }catch(e){} }
 
-    // Only gate when the visitor actually lands at the top; never hijack a
-    // mid-page load, an in-page anchor, or a reduced-motion preference.
+    // Only gate when the visitor actually lands at the very top of the page.
     if(reduce || (window.scrollY||0)>4){ done=true; return; }
-    try{ video.playbackRate=1.5; }catch(e){}
 
-    function setProg(){ var d=video.duration||10; if(prog) prog.style.width=Math.min(100,(video.currentTime/d)*100).toFixed(1)+'%'; }
+    // Keep the hero video muted no matter what the template runtime does to it,
+    // so muted-autoplay is always permitted and no audio ever plays.
+    (function(){ var v0=vid(); if(v0){ mute(v0);
+      ['play','loadeddata','loadedmetadata','canplay'].forEach(function(ev){ v0.addEventListener(ev,function(){ mute(vid()); }); });
+    } })();
 
-    function playTo(frac){
+    // The template progress bar is re-rendered by the page runtime, so draw our
+    // own fill inside the same track and update that instead.
+    var tmpl=hero.querySelector('[data-heroprog]'), fill=null;
+    if(tmpl && tmpl.parentNode){
+      try{ tmpl.style.width='0%'; }catch(e){}
+      fill=document.createElement('span');
+      fill.style.cssText='position:absolute;left:0;top:0;bottom:0;width:0%;background:#ffd200;display:block;z-index:2';
+      tmpl.parentNode.appendChild(fill);
+    }
+    function setProg(v){ if(!fill||!v) return; var d=v.duration||10; fill.style.width=Math.min(100,(v.currentTime/d)*100).toFixed(1)+'%'; }
+
+    function playSegment(){
+      var v=vid(); if(!v){ unlock(); return; }
+      mute(v); try{ v.playbackRate=1.5; }catch(e){}
+      var d=(v.duration>0? v.duration : 10);
+      var from=(seg===1? 0 : d*0.5), to=(seg===1? d*0.5 : d);
+      try{ if(Math.abs(v.currentTime-from)>0.05) v.currentTime=from; }catch(e){}
       playing=true;
-      var d=video.duration||10, target=(frac>=1? d : d*frac), start=performance.now();
-      var cap=((target-video.currentTime)/(video.playbackRate||1))*1000 + 4000; // wall-clock failsafe
-      var pr=null; try{ pr=video.play(); }catch(e){}
-      if(pr&&pr.catch) pr.catch(function(){ playing=false; seg=2; try{video.pause();}catch(e){} unlock(); });
-      (function tick(){
-        setProg();
-        if(video.currentTime>=target-0.04 || video.ended || (performance.now()-start)>cap){
-          try{ video.pause(); }catch(e){}
-          setProg(); playing=false;
-          if(seg>=2) setTimeout(unlock,140);
-          return;
-        }
-        requestAnimationFrame(tick);
-      })();
+      function onTime(){ setProg(v); if(v.currentTime>=to-0.05 || v.ended) finishSeg(); }
+      function finishSeg(){
+        v.removeEventListener('timeupdate', onTime);
+        clearTimeout(safety);
+        try{ v.pause(); }catch(e){}
+        setProg(v); playing=false;
+        if(seg>=2) setTimeout(unlock,140);
+      }
+      v.addEventListener('timeupdate', onTime);
+      var safety=setTimeout(finishSeg, ((to-from)/1.5)*1000 + 3000); // never trap if timeupdate stalls
+      mute(v);
+      var pr=null; try{ pr=v.play(); }catch(e){}
+      if(pr&&pr.catch) pr.catch(function(){ v.removeEventListener('timeupdate',onTime); clearTimeout(safety); playing=false; seg=2; try{v.pause();}catch(e){} unlock(); });
     }
 
-    function trigger(){
-      if(done||playing||!ready||seg>=2) return;
-      ready=false; seg++;
-      playTo(seg===1 ? 0.5 : 1);
-    }
+    function trigger(){ if(done||playing||!ready||seg>=2) return; ready=false; seg++; playSegment(); }
     // Re-arm only after scrolling goes quiet, so one continuous swipe cannot
     // skip both halves — each half needs its own distinct scroll.
-    function rearm(){ clearTimeout(quiet); quiet=setTimeout(function(){ ready=true; }, 70); }
+    function rearm(){ clearTimeout(quiet); quiet=setTimeout(function(){ ready=true; }, 80); }
 
-    // Failsafe: if video metadata never arrives, never trap the visitor.
-    setTimeout(function(){ if(!(video.duration>0)) unlock(); }, 4000);
+    // Failsafe: if the video never reports a duration, never trap the visitor.
+    setTimeout(function(){ var v=vid(); if(!v || !(v.duration>0)) unlock(); }, 4000);
 
     window.addEventListener('wheel', function(e){
-      if(done) return;                      // unlocked -> normal scrolling
-      if((window.scrollY||0)>4){ unlock(); return; } // left the hero some other way
-      e.preventDefault();                   // hold the page on the hero while gating
+      if(done) return;                                 // unlocked -> normal scrolling
+      if((window.scrollY||0)>4){ unlock(); return; }   // left the hero some other way
+      e.preventDefault();                              // hold the page on the hero while gating
       if(e.deltaY>0){ trigger(); rearm(); }
     }, {passive:false});
 

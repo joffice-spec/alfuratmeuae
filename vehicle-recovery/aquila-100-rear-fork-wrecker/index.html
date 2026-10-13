@@ -31,9 +31,9 @@
       "@id": "https://alfuratmeuae.com/#organization",
       "name": "Al Furat Group",
       "url": "https://alfuratmeuae.com/",
-      "foundingDate": "1988",
+      "foundingDate": "1999",
       "email": "info@alfuratgroup.com",
-      "description": "UAE manufacturer of vehicle bodies and recovery vehicles since 1988."
+      "description": "UAE manufacturer of vehicle bodies and recovery vehicles since 1999."
     },
     {
       "@type": "Product",
@@ -282,7 +282,7 @@ header.nav{position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(10,11,
 @keyframes aqgradwave{from{background-position:100% 0}to{background-position:0% 0}}
 @media (prefers-reduced-motion:reduce){[data-gradwave]{animation:none}[data-pulse]{animation:none!important}[data-callout],[data-line]{transition:none!important}}
 @media (max-width:860px){[data-gut]{padding-left:20px!important;padding-right:20px!important}[data-specrow]{flex-wrap:wrap!important;gap:22px!important;align-items:flex-start!important}[data-specnums]{gap:28px!important}}
-</style>
+[data-dropdown]{position:relative}[data-dropmenu]{position:absolute;top:calc(100% + 14px);left:50%;transform:translateX(-50%) translateY(-6px);min-width:210px;background:rgba(10,11,13,.96);backdrop-filter:saturate(140%) blur(14px);border:1px solid rgba(242,241,238,.14);padding:8px;display:flex;flex-direction:column;gap:2px;opacity:0;visibility:hidden;transition:opacity .22s ease,transform .22s ease,visibility .22s;z-index:60}[data-dropdown]:hover [data-dropmenu],[data-dropdown]:focus-within [data-dropmenu]{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}[data-dropmenu] a{display:block;padding:12px 14px;color:rgba(242,241,238,.82)!important;white-space:nowrap}[data-dropmenu] a:hover{background:rgba(242,241,238,.08);color:#fff!important}@media (max-width:860px){[data-dropdown]{display:none!important}}</style>
 <style id="aq-readability">/* Readability: lift the smallest supporting copy (form labels, captions,   spec labels, notes, chips, nav) without altering the mono/uppercase   industrial styling or any wording. */label{font-size:11px!important}.l{font-size:10.5px!important}.cap{font-size:11.5px!important}.note{font-size:12px!important;line-height:1.55!important}.chip{font-size:10px!important}nav a,header a{font-size:11.5px!important}</style>
 </head>
 <body>
@@ -293,13 +293,11 @@ header.nav{position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(10,11,
     <a class="brand" href="/" aria-label="Al Furat — home">
       <img src="/assets/al-furat-logo.png" alt="Al Furat">
       <span class="div"></span>
-      <span class="tag">AQUILA</span>
+      <span class="tag">MECHANICAL</span>
     </a>
     <nav class="navlinks" aria-label="Primary">
       <a href="#range">RANGE</a>
-      <a href="/#engineering">ENGINEERING</a>
-      <a href="/#manufacturing">MANUFACTURING</a>
-      <a href="/customized-trucks/">MOBILE WORKSHOPS</a>
+      <div data-dropdown style="position:relative;display:inline-flex;align-items:center"><a href="/customized-trucks/" style="display:inline-flex;align-items:center;gap:7px">SPECIALIZED VEHICLES <span style="font-size:8px;opacity:.7">&#9660;</span></a><div data-dropmenu><a href="/customized-trucks/">MOBILE WORKSHOPS</a></div></div>
       <a class="cta" href="#quote">REQUEST A QUOTE</a>
     </nav>
   </div>
@@ -538,9 +536,9 @@ header.nav{position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(10,11,
     <!-- manufacturing proof strip (verified company facts) -->
     <div style="margin-top:64px" class="reveal">
       <div class="eyebrow on-dark">Backed by Al Furat</div>
-      <h3 class="h3" style="margin-top:14px;max-width:20ch">Built in the Emirates since 1988</h3>
+      <h3 class="h3" style="margin-top:14px;max-width:20ch">Built in the Emirates since 1999</h3>
       <div class="proof">
-        <div class="c"><div class="v">1988</div><div class="l">Founded</div></div>
+        <div class="c"><div class="v">1999</div><div class="l">Founded</div></div>
         <div class="c"><div class="v">UAE</div><div class="l">Designed &amp; manufactured</div></div>
         <div class="c"><div class="v">Aquila</div><div class="l">Recovery vehicle line</div></div>
         <div class="c"><div class="v">Al Furat</div><div class="l">Vehicle-body engineering</div></div>
